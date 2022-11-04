@@ -8,13 +8,8 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
-    - name: ansible check with centos:centos7
-      uses: roles-ansible/check-ansible-centos-centos7-action@master
-      with:
-        targets: "./"
     - name: docker login
       env:
         DOCKER_USER: ${{ secrets.DOCKER_HUB_USERNAME }}
