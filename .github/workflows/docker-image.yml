@@ -23,7 +23,7 @@ jobs:
       with:
         context: .
         push: true
-        tags: ${{ DOCKER_USER }}/nodejs16v2:latest
+        tags: ${{secrets.DOCKER_HUB_USERNAME}}/nodejs16v2:latest
       
 
 
