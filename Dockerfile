@@ -1,10 +1,12 @@
-FROM quay.io/centos7/s2i-core-centos7
+FROM quay.io/fedora/s2i-core:35
 
 # This image provides a Node.JS environment you can use to run your Node.JS
 # applications.
 
 EXPOSE 8080
 
+# Add $HOME/node_modules/.bin to the $PATH, allowing user to make npm scripts
+# available on the CLI without using npm's --global installation mode
 # This image will be initialized with "npm run $NPM_RUN"
 # See https://docs.npmjs.com/misc/scripts, and your repo's package.json
 # file for possible values of NPM_RUN
@@ -17,22 +19,16 @@ EXPOSE 8080
 ENV NODEJS_VERSION=16 \
     NPM_RUN=start \
     NAME=nodejs \
-    NPM_CONFIG_PREFIX=$HOME/.npm-global
+    NPM_CONFIG_PREFIX=$HOME/.npm-global \
+    PATH=$HOME/node_modules/.bin/:$HOME/.npm-global/bin/:$PATH
 
-# Set SCL related variables in Dockerfile so that the collection is enabled by default
-# Add $HOME/node_modules/.bin to the $PATH, allowing user to make npm scripts
-# available on the CLI without using npm's --global installation mode
 ENV SUMMARY="Platform for building and running Node.js $NODEJS_VERSION applications" \
     DESCRIPTION="Node.js $NODEJS_VERSION available as container is a base platform for \
 building and running various Node.js $NODEJS_VERSION applications and frameworks. \
 Node.js is a platform built on Chrome's JavaScript runtime for easily building \
 fast, scalable network applications. Node.js uses an event-driven, non-blocking I/O model \
 that makes it lightweight and efficient, perfect for data-intensive real-time applications \
-that run across distributed devices." \
-    PATH=/opt/rh/rh-nodejs$NODEJS_VERSION/root/usr/bin:$HOME/node_modules/.bin/:$HOME/.npm-global/bin/:$PATH \
-    LD_LIBRARY_PATH=/opt/rh/rh-nodejs$NODEJS_VERSION/root/usr/lib64 \
-    X_SCLS=rh-nodejs$NODEJS_VERSION \
-    MANPATH=/opt/rh/rh-nodejs$NODEJS_VERSION/root/usr/share/man
+that run across distributed devices."
 
 LABEL summary="$SUMMARY" \
       description="$DESCRIPTION" \
@@ -45,17 +41,16 @@ LABEL summary="$SUMMARY" \
       com.redhat.dev-mode="DEV_MODE:false" \
       com.redhat.deployments-dir="${APP_ROOT}/src" \
       com.redhat.dev-mode.port="DEBUG_PORT:5858"\
-      com.redhat.component="rh-$NAME$NODEJS_VERSION-container" \
-      name="centos7/$NAME-$NODEJS_VERSION-centos7" \
+      com.redhat.component="$NAME" \
+      name="$FGC/$NAME" \
       version="$NODEJS_VERSION" \
       maintainer="SoftwareCollections.org <sclorg@redhat.com>" \
       help="For more information visit https://github.com/sclorg/s2i-nodejs-container" \
-      usage="s2i build <SOURCE-REPOSITORY> quay.io/centos7/$NAME-$NODEJS_VERSION-centos7:latest <APP-NAME>"
+      usage="oc new-app $FGC/$NAME~<SOURCE-REPOSITORY>"
 
-RUN yum install -y centos-release-scl-rh && \
-    MODULE_DEPS="make gcc gcc-c++ git openssl-devel" && \
-    INSTALL_PKGS="$MODULE_DEPS rh-nodejs${NODEJS_VERSION} rh-nodejs${NODEJS_VERSION}-npm rh-nodejs${NODEJS_VERSION}-nodejs-nodemon nss_wrapper" && \
-    ln -s /usr/lib/node_modules/nodemon/bin/nodemon.js /usr/bin/nodemon && \
+RUN yum -y module enable nodejs:$NODEJS_VERSION && \
+    MODULE_DEPS="make gcc gcc-c++ libatomic_ops git openssl-devel" && \
+    INSTALL_PKGS="$MODULE_DEPS nodejs nodejs-nodemon npm nss_wrapper which" && \
     yum install -y --setopt=tsflags=nodocs $INSTALL_PKGS && \
     rpm -V $INSTALL_PKGS && \
     node -v | grep -qe "^v$NODEJS_VERSION\." && echo "Found VERSION $NODEJS_VERSION" && \
