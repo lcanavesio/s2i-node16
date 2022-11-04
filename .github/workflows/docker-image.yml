@@ -8,7 +8,10 @@ on:
 
 jobs:
   build:
+    runs-on: ubuntu-latest
+    container: fedora:35
     steps:
+    - run: cat /etc/os-release
     - uses: actions/checkout@v2
     - name: docker login
       env:
