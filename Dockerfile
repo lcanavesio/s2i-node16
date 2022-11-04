@@ -59,6 +59,9 @@ RUN yum -y module enable nodejs:$NODEJS_VERSION && \
 # Copy the S2I scripts from the specific language image to $STI_SCRIPTS_PATH
 COPY ./s2i/bin/ $STI_SCRIPTS_PATH
 
+# print build sussess
+RUN bash -c 'echo -e probando el docker file 1'
+
 # Copy extra files to the image, including help file.
 COPY ./root/ /
 
