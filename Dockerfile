@@ -68,5 +68,10 @@ RUN chown -R 1001:0 ${APP_ROOT} && chmod -R ug+rwx ${APP_ROOT} && \
 
 USER 1001
 
+# print build sussess
+RUN bash -c 'echo -e probando el docker file'
+
+
+
 # Set the default CMD to print the usage of the language image
 CMD $STI_SCRIPTS_PATH/usage
